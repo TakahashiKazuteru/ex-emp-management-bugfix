@@ -16,11 +16,10 @@ public class InsertAdministratorForm {
 	private String name;
 	/** メールアドレス */
 	@NotBlank(message="空欄では登録できません")
-    @Email(message="メールアドレスを入力してください")
+	@Email(message="メールアドレスを入力してください")
 	private String mailAddress;
 	/** パスワード */
 	@NotBlank(message="空欄では登録できません")
-    @Min(value=5,message="6文字以上で入力してください")
 	private String password;
 	public String getName() {
 		return name;
