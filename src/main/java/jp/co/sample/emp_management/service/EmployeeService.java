@@ -25,11 +25,21 @@ public class EmployeeService {
 	/**
 	 * 従業員情報を全件取得します.
 	 * 
-	 * @return　従業員情報一覧
+	 * @return 従業員情報一覧
 	 */
 	public List<Employee> showList() {
 		List<Employee> employeeList = employeeRepository.findAll();
 		return employeeList;
+	}
+	
+	/**
+	 * 従業員情報の名前をあいまい検索します.
+	 *
+	 * @param name 名前
+	 * @return 従業員情報一覧
+	 */
+	public List<Employee> showListByName(String name){
+		return employeeRepository.findByName(name);
 	}
 	
 	/**
