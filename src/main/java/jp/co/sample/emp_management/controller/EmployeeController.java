@@ -64,13 +64,13 @@ public class EmployeeController {
         List<Employee> employeeList;
         if (searchName.equals("")) {
             employeeList = employeeService.showList();
-        } else {
-            employeeList = employeeService.showListByName(searchName);
-            if (employeeList.size() == 0) {
-                System.out.println("true!");
-                model.addAttribute("employeeList_notFound", true);
-            }
+            return "employee/list";
         }
+        employeeList = employeeService.showListByName(searchName);
+        if (employeeList.size() == 0) {
+            model.addAttribute("employeeList_notFound", true);
+        }
+        
         model.addAttribute("employeeList", employeeList);
         return "employee/list";
     }
