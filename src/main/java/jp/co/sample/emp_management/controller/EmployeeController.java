@@ -1,6 +1,9 @@
 package jp.co.sample.emp_management.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import jp.co.sample.emp_management.domain.Employee;
 import jp.co.sample.emp_management.form.UpdateEmployeeForm;
 import jp.co.sample.emp_management.service.EmployeeService;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.validation.constraints.Email;
 
 /**
  * 従業員情報を操作するコントローラー.
@@ -115,6 +122,21 @@ public class EmployeeController {
         employee.setDependentsCount(form.getIntDependentsCount());
         employeeService.update(employee);
         return "redirect:/employee/showList";
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/complete", method = RequestMethod.POST)
+    synchronized public Map<String, List<String>> complete(String inputData) {
+        Map<String, List<String>> completeMap = new HashMap<>();
+        if (inputData.length() < 1) {
+            return completeMap;
+        }
+        List<String> list = new ArrayList<>();
+        for (Employee employee : employeeService.showListByName(inputData)) {
+            list.add(employee.getName());
+        }
+        completeMap.put("suggestions",list);
+        return completeMap;
     }
     
 }
