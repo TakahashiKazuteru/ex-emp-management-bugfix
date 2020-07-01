@@ -36,7 +36,6 @@ public class AdministratorController {
     @Autowired
     private HttpSession session;
     
-    
     /**
      * 使用するフォームオブジェクトをリクエストスコープに格納する.
      *
@@ -77,30 +76,20 @@ public class AdministratorController {
      */
     @RequestMapping("/insert")
     public String insert(@Validated InsertAdministratorForm form, BindingResult result, Model model) {
-        boolean isInputError = false;
-        if (result.hasErrors()) {
-            isInputError = true;
-        }
         if (administratorService.findByMailAddress(form.getMailAddress()) != null) {
             FieldError fieldError = new FieldError(result.getObjectName(), "mailAddress", "すでに登録されているメールアドレスです");
             result.addError(fieldError);
-            isInputError = true;
         }
         if (!(form.getPassword().equals(form.getConfirmPassword()))) {
             FieldError fieldError = new FieldError(result.getObjectName(), "confirmPassword", "パスワードが一致しません");
             result.addError(fieldError);
-            isInputError = true;
         }
-        if (isInputError) {
+        if (result.hasErrors()) {
             return toInsert(model);
         }
         Administrator administrator = new Administrator();
         // フォームからドメインにプロパティ値をコピー
-        
-        String hashPassword = BCrypt.hashpw(form.getPassword(), BCrypt.gensalt());
-        administrator.setName(form.getName());
-        administrator.setMailAddress(form.getMailAddress());
-        administrator.setPassword(hashPassword);
+        BeanUtils.copyProperties(form,administrator);
         administratorService.insert(administrator);
         return "redirect:/";
     }
