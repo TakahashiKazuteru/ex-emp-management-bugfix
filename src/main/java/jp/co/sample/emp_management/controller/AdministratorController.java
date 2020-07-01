@@ -2,6 +2,7 @@ package jp.co.sample.emp_management.controller;
 
 import javax.servlet.http.HttpSession;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -75,6 +76,10 @@ public class AdministratorController {
 		}
 		if (administratorService.findByMailAddress(form.getMailAddress()) != null) {
 			model.addAttribute("mailError",true);
+			return toInsert(model);
+		}
+		if(!(form.getPassword().equals(form.getConfirmPassword()))){
+			model.addAttribute("confirmPasswordError",true);
 			return toInsert(model);
 		}
 		Administrator administrator = new Administrator();
