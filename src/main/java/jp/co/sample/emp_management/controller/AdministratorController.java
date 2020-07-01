@@ -5,7 +5,7 @@ import javax.servlet.http.HttpSession;
 import ch.qos.logback.core.net.SyslogOutputStream;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,6 +18,8 @@ import jp.co.sample.emp_management.domain.Administrator;
 import jp.co.sample.emp_management.form.InsertAdministratorForm;
 import jp.co.sample.emp_management.form.LoginForm;
 import jp.co.sample.emp_management.service.AdministratorService;
+
+import java.util.List;
 
 /**
  * 管理者情報を操作するコントローラー.
@@ -94,8 +96,11 @@ public class AdministratorController {
         }
         Administrator administrator = new Administrator();
         // フォームからドメインにプロパティ値をコピー
+        
+        String hashPassword = BCrypt.hashpw(form.getPassword(), BCrypt.gensalt());
         administrator.setName(form.getName());
-        administrator.setPassword(form.getPassword());
+        administrator.setMailAddress(form.getMailAddress());
+        administrator.setPassword(hashPassword);
         administratorService.insert(administrator);
         return "redirect:/";
     }
@@ -124,8 +129,12 @@ public class AdministratorController {
      */
     @RequestMapping("/login")
     public String login(LoginForm form, BindingResult result, Model model) {
-        Administrator administrator = administratorService.login(form.getMailAddress(), form.getPassword());
+        Administrator administrator = administratorService.findByMailAddress(form.getMailAddress());
         if (administrator == null) {
+            model.addAttribute("errorMessage", "メールアドレスまたはパスワードが不正です。");
+            return toLogin();
+        }
+        if (!BCrypt.checkpw(form.getPassword(),administrator.getPassword())) {
             model.addAttribute("errorMessage", "メールアドレスまたはパスワードが不正です。");
             return toLogin();
         }
