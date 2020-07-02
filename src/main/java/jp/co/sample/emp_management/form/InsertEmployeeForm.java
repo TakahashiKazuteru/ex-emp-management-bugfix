@@ -2,6 +2,7 @@ package jp.co.sample.emp_management.form;
 
 import org.hibernate.validator.constraints.Range;
 import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -17,8 +18,8 @@ public class InsertEmployeeForm {
     @NotBlank(message="空欄では登録できません")
     private String name;
     /** 画像パス */
-    @Pattern(regexp="^.*(\\.png|\\.jpg)$",message="pngかjpgファイルを指定してください")
-    private String image;
+    //@Pattern(regexp="^.*(\\.png|\\.jpg)$",message="pngかjpgファイルを指定してください")
+    private MultipartFile image;
     /** 性別 */
     @NotBlank(message="どちらか選択してください")
     private String gender;
@@ -59,11 +60,11 @@ public class InsertEmployeeForm {
         this.name = name;
     }
     
-    public String getImage() {
+    public MultipartFile getImage() {
         return image;
     }
     
-    public void setImage(String image) {
+    public void setImage(MultipartFile image) {
         this.image = image;
     }
     

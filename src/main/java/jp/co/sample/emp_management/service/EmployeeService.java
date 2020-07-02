@@ -1,8 +1,13 @@
 package jp.co.sample.emp_management.service;
 
+import java.io.IOException;
+import java.sql.Date;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import jp.co.sample.emp_management.form.InsertEmployeeForm;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,9 +84,24 @@ public class EmployeeService {
     /**
      * 従業員情報を1件登録します.
      *
-     * @param employee 追加する社員情報
+     * @param form 社員情報
      */
-    public void registEmployee(Employee employee) {
-        employeeRepository.insert(employee);
+    public void registEmployee(InsertEmployeeForm form) {
+        Employee newEmployee = new Employee();
+        BeanUtils.copyProperties(form, newEmployee);
+        try {
+            byte[] imageByteCode = Base64.getEncoder().encode(form.getImage().getBytes());
+            String imageBase64 = "data:" + form.getImage().getContentType() + ";base64," + (new String(imageByteCode));
+            newEmployee.setImage(imageBase64);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        newEmployee.setSalary(Integer.parseInt(form.getSalary()));
+        newEmployee.setDependentsCount(Integer.parseInt(form.getDependentsCount()));
+        Date date = Date.valueOf(form.getHireDate());
+        newEmployee.setHireDate(date);
+        int nextId = employeeRepository.findMaxId() + 1;
+        newEmployee.setId(nextId);
+        employeeRepository.insert(newEmployee);
     }
 }

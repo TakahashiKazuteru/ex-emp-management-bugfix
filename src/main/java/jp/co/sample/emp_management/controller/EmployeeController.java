@@ -1,5 +1,7 @@
 package jp.co.sample.emp_management.controller;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.util.*;
 
@@ -19,8 +21,6 @@ import jp.co.sample.emp_management.form.UpdateEmployeeForm;
 import jp.co.sample.emp_management.service.EmployeeService;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import javax.validation.constraints.Email;
 
 /**
  * 従業員情報を操作するコントローラー.
@@ -151,23 +151,19 @@ public class EmployeeController {
      */
     @RequestMapping("/regist")
     synchronized public String regist(@Validated InsertEmployeeForm form, BindingResult result, Model model) {
+        
         if (form.getHireDate() == null) {
             FieldError fieldError = new FieldError(result.getObjectName(), "hireDate", "空欄では登録できません");
             result.addError(fieldError);
         }
+        if(form.getImage().isEmpty()){
+            FieldError fieldError = new FieldError(result.getObjectName(), "image", "");
+        }
         if (result.hasErrors()) {
             return register(model);
         }
-        Employee newEmployee = new Employee();
-        BeanUtils.copyProperties(form, newEmployee);
-        newEmployee.setSalary(Integer.parseInt(form.getSalary()));
-        newEmployee.setDependentsCount(Integer.parseInt(form.getDependentsCount()));
-        Date date = Date.valueOf(form.getHireDate());
-        newEmployee.setHireDate(date);
-        int nextId = employeeService.findMaxId() + 1;
-        newEmployee.setId(nextId);
         //郵便番号から住所のフィル
-        employeeService.registEmployee(newEmployee);
+        employeeService.registEmployee(form);
         return "redirect:/employee/showList";
     }
     
