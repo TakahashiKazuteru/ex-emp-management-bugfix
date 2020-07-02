@@ -151,7 +151,13 @@ public class EmployeeController {
      */
     @RequestMapping("/regist")
     synchronized public String regist(@Validated InsertEmployeeForm form, BindingResult result, Model model) {
-        
+        if(form.getMailAddress() != null) {
+            Employee employee = employeeService.findByEmail(form.getMailAddress());
+            if(employee != null){
+                FieldError fieldError = new FieldError(result.getObjectName(), "mailAddress", "すでに登録されているメールアドレスです");
+                result.addError(fieldError);
+            }
+        }
         if (form.getHireDate() == null) {
             FieldError fieldError = new FieldError(result.getObjectName(), "hireDate", "空欄では登録できません");
             result.addError(fieldError);
@@ -159,6 +165,7 @@ public class EmployeeController {
         if(form.getImage().isEmpty()){
             FieldError fieldError = new FieldError(result.getObjectName(), "image", "");
         }
+        
         if (result.hasErrors()) {
             return register(model);
         }

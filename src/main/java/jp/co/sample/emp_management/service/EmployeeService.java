@@ -82,6 +82,16 @@ public class EmployeeService {
     }
     
     /**
+     * メールアドレスから従業員を検索します.
+     *
+     * @param email メールアドレス
+     * @return 従業員情報(見つからない場合nullを返す)
+     */
+    public Employee findByEmail(String email){
+        return employeeRepository.findByEmail(email);
+    }
+    
+    /**
      * 従業員情報を1件登録します.
      *
      * @param form 社員情報

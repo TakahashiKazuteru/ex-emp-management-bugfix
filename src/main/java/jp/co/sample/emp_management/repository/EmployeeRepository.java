@@ -1,5 +1,6 @@
 package jp.co.sample.emp_management.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -126,5 +127,22 @@ public class EmployeeRepository {
         String insertSql="INSERT INTO employees "+
                 "VALUES(:id,:name,:image,:gender,:hireDate,:mailAddress,:zipCode,:address,:telephone,:salary,:characteristics,:dependentsCount);";
         template.update(insertSql,param);
+    }
+    
+    /**
+     * メールアドレスから従業員を検索します.
+     *
+     * @param email メールアドレス
+     * @return 従業員情報(見つからない場合nullを返す)
+     */
+    public Employee findByEmail(String email){
+        List<Employee> employeeList = new ArrayList<Employee>();
+        String sql = "SELECT id,name,image,gender,hire_date,mail_address,zip_code,address,telephone,salary,characteristics,dependents_count FROM employees WHERE mail_address = :email;";
+        SqlParameterSource param = new MapSqlParameterSource().addValue("email",email);
+        employeeList = template.query(sql,param,EMPLOYEE_ROW_MAPPER);
+        if(employeeList.size() == 0) {
+            return null;
+        }
+        return employeeList.get(0);
     }
 }
