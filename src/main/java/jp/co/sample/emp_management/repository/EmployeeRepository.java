@@ -2,7 +2,9 @@ package jp.co.sample.emp_management.repository;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.BeanProperty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -38,6 +40,13 @@ public class EmployeeRepository {
         employee.setCharacteristics(rs.getString("characteristics"));
         employee.setDependentsCount(rs.getInt("dependents_count"));
         return employee;
+    };
+    private final RowMapper<Integer> INT_ROW_MAPPER = (rs,i) ->{
+        Integer maxId = rs.getInt("MaxId");
+        if(maxId == null){
+            return 0;
+        }
+        return maxId;
     };
     
     @Autowired
@@ -87,6 +96,17 @@ public class EmployeeRepository {
     }
     
     /**
+     * IDの最大値を検索します.
+     *
+     * @return IDの最大値
+     */
+    public int findMaxId(){
+        String sql = "SELECT MAX(id) AS MaxId FROM employees;";
+        List<Integer> maxId = template.query(sql, INT_ROW_MAPPER);
+        return maxId.get(0);
+    }
+    
+    /**
      * 従業員情報を変更します.
      */
     public void update(Employee employee) {
@@ -94,5 +114,17 @@ public class EmployeeRepository {
         
         String updateSql = "UPDATE employees SET dependents_count=:dependentsCount WHERE id=:id";
         template.update(updateSql, param);
+    }
+    
+    /**
+     * 従業員情報を1件登録します.
+     *
+     * @param employee 従業員情報
+     */
+    public void insert(Employee employee){
+        SqlParameterSource param = new BeanPropertySqlParameterSource(employee);
+        String insertSql="INSERT INTO employees "+
+                "VALUES(:id,:name,:image,:gender,:hireDate,:mailAddress,:zipCode,:address,:telephone,:salary,:characteristics,:dependentsCount);";
+        template.update(insertSql,param);
     }
 }

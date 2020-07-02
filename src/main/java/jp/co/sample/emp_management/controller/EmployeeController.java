@@ -1,14 +1,15 @@
 package jp.co.sample.emp_management.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 
+import jp.co.sample.emp_management.form.InsertEmployeeForm;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +42,11 @@ public class EmployeeController {
     @ModelAttribute
     public UpdateEmployeeForm setUpForm() {
         return new UpdateEmployeeForm();
+    }
+    
+    @ModelAttribute
+    public InsertEmployeeForm setUpInsertEmployeeForm() {
+        return new InsertEmployeeForm();
     }
     
     /////////////////////////////////////////////////////
@@ -124,6 +130,54 @@ public class EmployeeController {
         return "redirect:/employee/showList";
     }
     
+    /**
+     * 社員登録画面を表示.
+     *
+     * @return 社員登録画面
+     */
+    @RequestMapping("/register")
+    public String register(Model model) {
+        return "employee/register";
+    }
+    
+    /**
+     * 社員情報を登録する.
+     *
+     * @param form   社員情報
+     * @param result バリデーションエラー情報
+     * @param model  リクエストスコープ
+     *
+     * @return 従業員リスト
+     */
+    @RequestMapping("/regist")
+    synchronized public String regist(@Validated InsertEmployeeForm form, BindingResult result, Model model) {
+        if (form.getHireDate() == null) {
+            FieldError fieldError = new FieldError(result.getObjectName(), "hireDate", "空欄では登録できません");
+            result.addError(fieldError);
+        }
+        if (result.hasErrors()) {
+            return register(model);
+        }
+        Employee newEmployee = new Employee();
+        BeanUtils.copyProperties(form, newEmployee);
+        newEmployee.setSalary(Integer.parseInt(form.getSalary()));
+        newEmployee.setDependentsCount(Integer.parseInt(form.getDependentsCount()));
+        Date date = Date.valueOf(form.getHireDate());
+        newEmployee.setHireDate(date);
+        int nextId = employeeService.findMaxId() + 1;
+        newEmployee.setId(nextId);
+        //郵便番号から住所のフィル
+        employeeService.registEmployee(newEmployee);
+        return "redirect:/employee/showList";
+    }
+    
+    /**
+     * 名前の検索候補をJSON形式で返すWeb API
+     *
+     * @param inputData 名前
+     *
+     * @return 検索候補のJSON
+     */
     @ResponseBody
     @RequestMapping(value = "/complete", method = RequestMethod.POST)
     synchronized public Map<String, List<String>> complete(String inputData) {
@@ -135,7 +189,7 @@ public class EmployeeController {
         for (Employee employee : employeeService.showListByName(inputData)) {
             list.add(employee.getName());
         }
-        completeMap.put("suggestions",list);
+        completeMap.put("suggestions", list);
         return completeMap;
     }
     
