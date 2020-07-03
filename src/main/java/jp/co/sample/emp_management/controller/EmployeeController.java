@@ -2,8 +2,10 @@ package jp.co.sample.emp_management.controller;
 
 import java.util.*;
 
+import jp.co.sample.emp_management.domain.LoginAdmin;
 import jp.co.sample.emp_management.form.InsertEmployeeForm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -54,7 +56,7 @@ public class EmployeeController {
      * @return 従業員一覧画面
      */
     @RequestMapping("/showList")
-    public String showList(String selectPage, String searchName, Model model) {
+    public String showList(String selectPage, String searchName, Model model, @AuthenticationPrincipal LoginAdmin loginAdministrator) {
         if (searchName == null || "null".equals(searchName) || "".equals(searchName)) {
             searchName = "";
         }
