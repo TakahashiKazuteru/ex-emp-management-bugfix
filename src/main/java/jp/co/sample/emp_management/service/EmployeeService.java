@@ -2,9 +2,11 @@ package jp.co.sample.emp_management.service;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import jp.co.sample.emp_management.form.InsertEmployeeForm;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Service
 @Transactional
 public class EmployeeService {
+    private final static int pageViewCount = 10;
     
     @Autowired
     private EmployeeRepository employeeRepository;
@@ -64,6 +67,51 @@ public class EmployeeService {
     }
     
     /**
+     * 指定されたページの従業員情報を検索します.
+     *
+     * @param page ページ数
+     * @return 従業員情報
+     */
+    public List<Employee> pageSearch(int page) {
+        page -= 1;
+        page *= pageViewCount;
+        return employeeRepository.findByPage(page, pageViewCount);
+    }
+    
+    /**
+     * 名前あいまい検索の指定されたページ番号の従業員情報を検索します.
+     *
+     * @param name 名前
+     * @param page ページ数
+     * @return 従業員情報
+     */
+    public List<Employee> namePageSearch(String name,int page){
+        page -= 1;
+        page *= pageViewCount;
+        return employeeRepository.findByNameAndPage(page,name,pageViewCount);
+    }
+    
+    /**
+     * 従業員情報一覧のページ数を検索します.
+     *
+     * @return ページ数
+     */
+    public List<Integer> employeePages() {
+        return pageCalc(employeeRepository.findRowCount());
+    }
+    
+    /**
+     * 従業員あいまい検索のページ数を検索します.
+     *
+     * @param name 名前
+     *
+     * @return 検索結果件数
+     */
+    public List<Integer> employeeNamePages(String name) {
+        return pageCalc(employeeRepository.findRowCountByName(name));
+    }
+    
+    /**
      * 従業員情報を更新します.
      *
      * @param employee 　更新した従業員情報
@@ -85,9 +133,10 @@ public class EmployeeService {
      * メールアドレスから従業員を検索します.
      *
      * @param email メールアドレス
+     *
      * @return 従業員情報(見つからない場合nullを返す)
      */
-    public Employee findByEmail(String email){
+    public Employee findByEmail(String email) {
         return employeeRepository.findByEmail(email);
     }
     
@@ -113,5 +162,28 @@ public class EmployeeService {
         int nextId = employeeRepository.findMaxId() + 1;
         newEmployee.setId(nextId);
         employeeRepository.insert(newEmployee);
+    }
+    
+    /**
+     * データ数から必要なページ数を１からリストにして返します.
+     *
+     * @param dataCount データ数
+     *
+     * @return ページ数リスト
+     */
+    private List<Integer> pageCalc(int dataCount) {
+        if (dataCount < pageViewCount) {
+            dataCount = 1;
+        } else if (dataCount % pageViewCount == 0) {
+            dataCount /= pageViewCount;
+        } else {
+            dataCount /= pageViewCount;
+            dataCount++;
+        }
+        List<Integer> dataCounts = new ArrayList<>();
+        for (int i = 1; i <= dataCount; i++) {
+            dataCounts.add(i);
+        }
+        return dataCounts;
     }
 }

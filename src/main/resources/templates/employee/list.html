@@ -58,7 +58,7 @@
 
     <!-- table -->
     <div class="row">
-        <form th:action="@{/employee/search}"
+        <form th:action="@{/employee/showList}"
               th:object="${employeeSearchForm}" method="post">
             <div class="col-lg-offset-2 col-lg-7 col-md-offset-2 col-md-7 col-sm-10 col-xs-10">
                 <input type="text" name="searchName" th:value="${searchWord}" id="searchName"
@@ -99,6 +99,9 @@
                 </tr>
                 </tbody>
             </table>
+            <span th:each="num : ${pages}">
+                <a th:text="${num}" th:href="@{/employee/showList?selectPage=}+${num}+@{&searchName=}+${searchWord}"></a>
+            </span>
             <span th:if="${employeeList_notFound}">１件もありませんでした</span>
 
 

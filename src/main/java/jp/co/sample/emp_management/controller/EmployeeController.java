@@ -1,26 +1,19 @@
 package jp.co.sample.emp_management.controller;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.util.*;
 
 import jp.co.sample.emp_management.form.InsertEmployeeForm;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import jp.co.sample.emp_management.domain.Employee;
 import jp.co.sample.emp_management.form.UpdateEmployeeForm;
 import jp.co.sample.emp_management.service.EmployeeService;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 従業員情報を操作するコントローラー.
@@ -61,29 +54,35 @@ public class EmployeeController {
      * @return 従業員一覧画面
      */
     @RequestMapping("/showList")
-    public String showList(Model model) {
-        List<Employee> employeeList = employeeService.showList();
-        model.addAttribute("employeeList", employeeList);
-        return "employee/list";
-    }
-    
-    /**
-     * あいまい検索を行い従業員一覧画面に反映させる
-     *
-     * @return 従業員一覧画面
-     */
-    @RequestMapping("/search")
-    public String search(String searchName, Model model) {
-        List<Employee> employeeList;
-        if (searchName.equals("")) {
-            employeeList = employeeService.showList();
-            return "employee/list";
+    public String showList(String selectPage, String searchName, Model model) {
+        if (searchName == null || "".equals(searchName)) {
+            model.addAttribute("pages", employeeService.employeePages());
+        } else {
+            model.addAttribute("pages", employeeService.employeeNamePages(searchName));
         }
-        employeeList = employeeService.showListByName(searchName);
+        int page;
+        if (selectPage == null) {
+            page = 1;
+        } else {
+            try {
+                page = Integer.parseInt(selectPage);
+            } catch (Exception e) {
+                page = 1;
+            }
+        }
+        if (page < 1) {
+            page = 1;
+        }
+        List<Employee> employeeList;
+        if (searchName == null || "".equals(searchName)) {
+            employeeList = employeeService.pageSearch(page);
+        } else {
+            employeeList = employeeService.namePageSearch(searchName, page);
+            model.addAttribute("searchWord", searchName);
+        }
         if (employeeList.size() == 0) {
             model.addAttribute("employeeList_notFound", true);
         }
-        
         model.addAttribute("employeeList", employeeList);
         return "employee/list";
     }
@@ -151,9 +150,9 @@ public class EmployeeController {
      */
     @RequestMapping("/regist")
     synchronized public String regist(@Validated InsertEmployeeForm form, BindingResult result, Model model) {
-        if(form.getMailAddress() != null) {
+        if (form.getMailAddress() != null) {
             Employee employee = employeeService.findByEmail(form.getMailAddress());
-            if(employee != null){
+            if (employee != null) {
                 FieldError fieldError = new FieldError(result.getObjectName(), "mailAddress", "すでに登録されているメールアドレスです");
                 result.addError(fieldError);
             }
@@ -162,7 +161,7 @@ public class EmployeeController {
             FieldError fieldError = new FieldError(result.getObjectName(), "hireDate", "空欄では登録できません");
             result.addError(fieldError);
         }
-        if(form.getImage().isEmpty()){
+        if (form.getImage().isEmpty()) {
             FieldError fieldError = new FieldError(result.getObjectName(), "image", "");
         }
         
