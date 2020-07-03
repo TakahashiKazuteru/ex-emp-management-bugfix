@@ -63,29 +63,15 @@ public class EmployeeRepository {
     }
     
     /**
-     * 指定された番号から指定された数の従業員情報を検索します
-     *
-     * @param number        検索開始位置の番号
-     * @param pageViewCount 検索件数
-     *
-     * @return 従業員情報(0件ならサイズ0の従業員情報を返す)
-     */
-    public List<Employee> findByPage(int number, int pageViewCount) {
-        String sql = "SELECT id,name,image,gender,hire_date,mail_address,zip_code,address,telephone,salary,characteristics,dependents_count FROM employees " +
-                "ORDER BY hire_date DESC OFFSET :number LIMIT :pageViewCount;";
-        SqlParameterSource param = new MapSqlParameterSource().addValue("number", number).addValue("pageViewCount", pageViewCount);
-        return template.query(sql, param, EMPLOYEE_ROW_MAPPER);
-    }
-    
-    /**
      * 指定された名前の検索結果の番号から指定された数の従業員情報を検索します
      *
-     * @param number 検索開始位置の番号
-     * @param name 名前
+     * @param number        検索開始位置の番号
+     * @param name          名前
      * @param pageViewCount 検索件数
+     *
      * @return 従業員情報
      */
-    public List<Employee> findByNameAndPage(int number, String name, int pageViewCount) {
+    public List<Employee> findByPage(int number, String name, int pageViewCount) {
         String sql = "SELECT id,name,image,gender,hire_date,mail_address,zip_code,address,telephone,salary,characteristics,dependents_count FROM employees " +
                 "WHERE name LIKE :name ORDER BY hire_date DESC OFFSET :number LIMIT :pageViewCount;";
         SqlParameterSource param = new MapSqlParameterSource().addValue("name", "%" + name + "%").addValue("number", number).addValue("pageViewCount", pageViewCount);
@@ -123,16 +109,6 @@ public class EmployeeRepository {
         return development;
     }
     
-    /**
-     * 従業員情報登録数を検索します.
-     *
-     * @return 従業員情報登録数()
-     */
-    public int findRowCount() {
-        String sql = "SELECT COUNT(id) AS num FROM employees;";
-        List<Integer> rowCount = template.query(sql, INT_ROW_MAPPER);
-        return rowCount.get(0);
-    }
     
     /**
      * 名前あいまい検索の結果件数を検索します.
@@ -141,9 +117,9 @@ public class EmployeeRepository {
      *
      * @return 検索結果件数
      */
-    public int findRowCountByName(String name) {
-        String sql = "SELECT COUNT(id) AS num FROM employees WHERE name = :name;";
-        SqlParameterSource param = new MapSqlParameterSource().addValue("name", name);
+    public int findRowCount(String name) {
+        String sql = "SELECT COUNT(id) AS num FROM employees WHERE name LIKE :name;";
+        SqlParameterSource param = new MapSqlParameterSource().addValue("name", "%" + name + "%");
         List<Integer> rowCount = template.query(sql, param, INT_ROW_MAPPER);
         return rowCount.get(0);
     }

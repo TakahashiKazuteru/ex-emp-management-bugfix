@@ -99,7 +99,8 @@
                 </tr>
                 </tbody>
             </table>
-            <span th:each="num : ${pages}">
+            <span th:unless="${employeeList_notFound}">ページ番号：</span>
+            <span th:unless="${employeeList_notFound}" th:each="num : ${pages}">
                 <a th:text="${num}" th:href="@{/employee/showList?selectPage=}+${num}+@{&searchName=}+${searchWord}"></a>
             </span>
             <span th:if="${employeeList_notFound}">１件もありませんでした</span>

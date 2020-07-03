@@ -67,39 +67,18 @@ public class EmployeeService {
     }
     
     /**
-     * 指定されたページの従業員情報を検索します.
-     *
-     * @param page ページ数
-     * @return 従業員情報
-     */
-    public List<Employee> pageSearch(int page) {
-        page -= 1;
-        page *= pageViewCount;
-        return employeeRepository.findByPage(page, pageViewCount);
-    }
-    
-    /**
      * 名前あいまい検索の指定されたページ番号の従業員情報を検索します.
      *
      * @param name 名前
      * @param page ページ数
+     *
      * @return 従業員情報
      */
-    public List<Employee> namePageSearch(String name,int page){
+    public List<Employee> pageSearch(String name, int page) {
         page -= 1;
         page *= pageViewCount;
-        return employeeRepository.findByNameAndPage(page,name,pageViewCount);
+        return employeeRepository.findByPage(page, name, pageViewCount);
     }
-    
-    /**
-     * 従業員情報一覧のページ数を検索します.
-     *
-     * @return ページ数
-     */
-    public List<Integer> employeePages() {
-        return pageCalc(employeeRepository.findRowCount());
-    }
-    
     /**
      * 従業員あいまい検索のページ数を検索します.
      *
@@ -107,8 +86,8 @@ public class EmployeeService {
      *
      * @return 検索結果件数
      */
-    public List<Integer> employeeNamePages(String name) {
-        return pageCalc(employeeRepository.findRowCountByName(name));
+    public List<Integer> employeePages(String name) {
+        return pageCalc(employeeRepository.findRowCount(name));
     }
     
     /**
@@ -185,5 +164,22 @@ public class EmployeeService {
             dataCounts.add(i);
         }
         return dataCounts;
+    }
+    
+    public int pageStrToInt(String selectPage) {
+        int page;
+        if (selectPage == null) {
+            page = 1;
+        } else {
+            try {
+                page = Integer.parseInt(selectPage);
+            } catch (Exception e) {
+                page = 1;
+            }
+        }
+        if (page < 1) {
+            page = 1;
+        }
+        return page;
     }
 }

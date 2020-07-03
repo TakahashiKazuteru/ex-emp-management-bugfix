@@ -55,31 +55,12 @@ public class EmployeeController {
      */
     @RequestMapping("/showList")
     public String showList(String selectPage, String searchName, Model model) {
-        if (searchName == null || "".equals(searchName)) {
-            model.addAttribute("pages", employeeService.employeePages());
-        } else {
-            model.addAttribute("pages", employeeService.employeeNamePages(searchName));
+        if (searchName == null || "null".equals(searchName) || "".equals(searchName)) {
+            searchName = "";
         }
-        int page;
-        if (selectPage == null) {
-            page = 1;
-        } else {
-            try {
-                page = Integer.parseInt(selectPage);
-            } catch (Exception e) {
-                page = 1;
-            }
-        }
-        if (page < 1) {
-            page = 1;
-        }
-        List<Employee> employeeList;
-        if (searchName == null || "".equals(searchName)) {
-            employeeList = employeeService.pageSearch(page);
-        } else {
-            employeeList = employeeService.namePageSearch(searchName, page);
-            model.addAttribute("searchWord", searchName);
-        }
+        model.addAttribute("pages", employeeService.employeePages(searchName));
+        List<Employee> employeeList = employeeService.pageSearch(searchName, employeeService.pageStrToInt(selectPage));
+        model.addAttribute("searchWord", searchName);
         if (employeeList.size() == 0) {
             model.addAttribute("employeeList_notFound", true);
         }
